@@ -16,17 +16,59 @@
 
 package sample.freemarker;
 
+import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 @Controller
 public class ImportController {
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/to_import", method = RequestMethod.GET)
 	public String toImport(Map<String, Object> model) {
 		return "import";
 	}
+
+    @RequestMapping(value = "/to_bq", method = RequestMethod.GET)
+    public String toBiaoQian(Map<String, Object> model) {
+        return "bq";
+    }
+    @RequestMapping(value = "/do_bq", method = RequestMethod.POST)
+    public String doBiaoQian(Map<String, Object> model,HttpServletRequest request) {
+        String docxPath = request.getParameter("docxPath");
+        String outDirPathTemp = docxPath+"\\out-temp";
+        String outDirPath = docxPath+"\\out";
+        BqTool.fileList.clear();
+        BqTool.fileList(docxPath + "\\docx");
+        File outTempDir = new File(outDirPathTemp);
+        if(!outTempDir.exists()){
+            outTempDir.mkdirs();
+        }
+        File outDir = new File(outDirPath);
+        if(!outDir.exists()){
+            outDir.mkdirs();
+        }
+        for (String filepath : BqTool.fileList) {
+            File file = new File(filepath);
+            String filename = file.getName();
+            try {
+                String outHtml1FilePath = outDirPathTemp+"\\"+filename+"-1.html";
+                BqTool.toHtml(filepath,outHtml1FilePath,outDirPathTemp);
+                String outHtml2FilePath = outDirPathTemp+"\\"+filename+"-2.html";
+                BqTool.parseHtml(outHtml1FilePath,outHtml2FilePath);
+
+                String outDocxFilePath = filepath.replace("\\docx\\","\\out\\");
+                BqTool.toDocx(outHtml2FilePath,outDocxFilePath);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+        return "bq";
+    }
 }
