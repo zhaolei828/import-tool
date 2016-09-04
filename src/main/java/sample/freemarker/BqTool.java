@@ -284,22 +284,22 @@ public class BqTool {
 //        }
 //    }
 
-    static List<String> fileList = Lists.newArrayList();
-    public static void fileList(String dirPath){
-        File dirFile = new File(dirPath);
-        String[] sonFilePaths = dirFile.list();
-        for (String sonFilePath : sonFilePaths) {
-            File sonFile = new File(dirPath+"\\"+sonFilePath);
-            if (sonFile.isDirectory()){
-                fileList(dirPath+"\\"+sonFilePath);
-            }else {
-                String filename = sonFile.getName();
-                if(filename.toLowerCase().endsWith("docx")){
-                    fileList.add(dirPath+"\\"+sonFilePath);
-                }
-            }
-        }
-    }
+//    static List<String> fileList = Lists.newArrayList();
+//    public static List<String> fileList(String dirPath){
+//        File dirFile = new File(dirPath);
+//        String[] sonFilePaths = dirFile.list();
+//        for (String sonFilePath : sonFilePaths) {
+//            File sonFile = new File(dirPath+"\\"+sonFilePath);
+//            if (sonFile.isDirectory()){
+//                fileList(dirPath+"\\"+sonFilePath);
+//            }else {
+//                String filename = sonFile.getName();
+//                if(filename.toLowerCase().endsWith("docx")){
+//                    fileList.add(dirPath+"\\"+sonFilePath);
+//                }
+//            }
+//        }
+//    }
 
     public static String getNumber(String str){
         String regEx="[^0-9]";

@@ -34,17 +34,14 @@ public class ImportController {
 		return "import";
 	}
 
-    @RequestMapping(value = "/to_bq", method = RequestMethod.GET)
-    public String toBiaoQian(Map<String, Object> model) {
-        return "bq";
-    }
-    @RequestMapping(value = "/do_bq", method = RequestMethod.POST)
-    public String doBiaoQian(Map<String, Object> model,HttpServletRequest request) {
-        String docxPath = request.getParameter("docxPath");
-        String outDirPathTemp = docxPath+"\\out-temp";
-        String outDirPath = docxPath+"\\out";
-        BqTool.fileList.clear();
-        BqTool.fileList(docxPath + "\\docx");
+    @RequestMapping(value = "/do_import", method = RequestMethod.POST)
+    public String doImport(Map<String, Object> model,HttpServletRequest request) {
+        String docPath = request.getParameter("docPath");
+        String outDirPathTemp = docPath+"\\out-temp";
+        String outDirPath = docPath+"\\out";
+        List<String> docList = Lists.newArrayList();
+        docList = FileUtil.getFileList(docPath+"\\doc",docList);
+
         File outTempDir = new File(outDirPathTemp);
         if(!outTempDir.exists()){
             outTempDir.mkdirs();
@@ -53,7 +50,49 @@ public class ImportController {
         if(!outDir.exists()){
             outDir.mkdirs();
         }
-        for (String filepath : BqTool.fileList) {
+        for (String filepath : docList) {
+            File file = new File(filepath);
+            String filename = file.getName();
+            try {
+                String outHtmlFilePath = outDirPathTemp+"\\"+filename.replace(".doc",".html");
+                ImportTool.toHtml(filepath,outHtmlFilePath);
+
+                String outDocxFilePath = filepath.replace("\\doc\\","\\out\\");
+                outDocxFilePath = outDocxFilePath.replace(".doc",".xls");
+                File outfile = new File(outDocxFilePath);
+                if(!outfile.getParentFile().exists()){
+                    outfile.getParentFile().mkdirs();
+                }
+                ImportTool.improtExcel(outHtmlFilePath,outDocxFilePath);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+        return "import";
+    }
+
+    @RequestMapping(value = "/to_bq", method = RequestMethod.GET)
+    public String toBiaoQian(Map<String, Object> model) {
+        return "bq";
+    }
+
+    @RequestMapping(value = "/do_bq", method = RequestMethod.POST)
+    public String doBiaoQian(Map<String, Object> model,HttpServletRequest request) {
+        String docxPath = request.getParameter("docxPath");
+        String outDirPathTemp = docxPath+"\\out-temp";
+        String outDirPath = docxPath+"\\out";
+        List<String> fileList = Lists.newArrayList();
+        fileList = FileUtil.getFileList(docxPath+"\\docx",fileList);
+        File outTempDir = new File(outDirPathTemp);
+        if(!outTempDir.exists()){
+            outTempDir.mkdirs();
+        }
+        File outDir = new File(outDirPath);
+        if(!outDir.exists()){
+            outDir.mkdirs();
+        }
+        for (String filepath : fileList) {
             File file = new File(filepath);
             String filename = file.getName();
             try {
