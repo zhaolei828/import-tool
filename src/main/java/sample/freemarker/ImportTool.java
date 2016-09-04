@@ -1,26 +1,16 @@
 package sample.freemarker;
 
 import com.google.common.collect.Lists;
-import org.apache.poi.hwpf.HWPFDocumentCore;
-import org.apache.poi.hwpf.converter.WordToHtmlConverter;
-import org.apache.poi.hwpf.converter.WordToHtmlUtils;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
-import org.w3c.dom.Document;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,26 +23,8 @@ import java.util.regex.Pattern;
  * Time: 下午1:58
  */
 public class ImportTool {
-    public static void toHtml(String filePath,String outFilePath) throws Exception {
-        Document doc = process(new File(filePath));
-        DOMSource domSource = new DOMSource(doc);
-        OutputStream outputStream = new FileOutputStream(new File(outFilePath));
-        StreamResult streamResult = new StreamResult(outputStream);
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer serializer = tf.newTransformer();
-        serializer.setOutputProperty("encoding", "UTF-8");
-        serializer.setOutputProperty("indent", "yes");
-        serializer.setOutputProperty("method", "html");
-        serializer.transform(domSource, streamResult);
-    }
-    private static Document process(File docFile) throws Exception {
-        HWPFDocumentCore wordDocument = WordToHtmlUtils.loadDoc(docFile);
-        WordToHtmlConverter wordToHtmlConverter = new WordToHtmlConverter(XMLHelper.getDocumentBuilderFactory().newDocumentBuilder().newDocument());
-        wordToHtmlConverter.processDocument(wordDocument);
-        return wordToHtmlConverter.getDocument();
-    }
 
-    public static void improtExcel(String htmlPath,String excelPath) throws Exception{
+    public static void improtExcel(String docPath,String htmlPath,String excelPath) throws Exception{
         org.jsoup.nodes.Document doc = Jsoup.parse(new File(htmlPath), "UTF-8");
         Element body = doc.body();
         Elements elements = body.children();
@@ -232,9 +204,37 @@ public class ImportTool {
             System.out.println("=============");
         }
         if(blankDaAnCount/timuList.size() > 0.5){
+            File ansFile = findAnsFile(docPath);
+            File qHtmlFile = new File(htmlPath);
+            File qHtmlParentDirFile = qHtmlFile.getParentFile();
+            String ansHtmlFilePath = qHtmlParentDirFile.getAbsolutePath() + "\\" + ansFile.getName() + "_.html";
+            if(null != ansFile){
+                FileUtil.docxToHtml(ansFile.getAbsolutePath(),ansHtmlFilePath,qHtmlParentDirFile.getAbsolutePath());
 
+            }
         }
         writeIntoExcel(timuList,excelPath);
+    }
+
+    static File findAnsFile(String docPath){
+        File docFile = new File(docPath);
+        String docFileName = docFile.getName();
+        String docName = docFileName.substring(0,docFileName.lastIndexOf("."));
+        File parentDirFile = docFile.getParentFile();
+        if (parentDirFile.isDirectory()){
+            File[] sonFiles = parentDirFile.listFiles();
+            for (File sonFile:sonFiles) {
+                String sonFileName = sonFile.getName();
+                String sonName = sonFileName.substring(0,sonFileName.lastIndexOf("."));
+                String regex = "([\\u4e00-\\u9fa5]*)"+docName+"答案([\\u4e00-\\u9fa5]*)";
+                Pattern p = Pattern.compile(regex);
+                Matcher m = p.matcher(sonName);
+                if(m.find()){
+                  return sonFile;
+                }
+            }
+        }
+        return null;
     }
 
     public static List<List<Element>> regroup(List<Element> pElementList){

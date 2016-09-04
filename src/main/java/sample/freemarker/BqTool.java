@@ -1,12 +1,7 @@
 package sample.freemarker;
 
 import com.google.common.collect.Lists;
-import org.docx4j.Docx4J;
-import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
-import org.docx4j.convert.out.HTMLSettings;
-import org.docx4j.convert.out.html.SdtToListSdtTagHandler;
-import org.docx4j.convert.out.html.SdtWriter;
 import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -17,7 +12,10 @@ import org.jsoup.nodes.Entities;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,45 +25,6 @@ import java.util.regex.Pattern;
  * @create 2016-08-13 15:41
  */
 public class BqTool {
-    private static boolean save = true;
-//    public static String docxPath;
-//    public static String outDirPathTemp = docxPath+"\\out-temp";
-//    public static String outDirPath = docxPath+"\\out";
-
-    static void toHtml(String inputfilepath,String outfilepath,String outDirPath) throws Docx4JException, FileNotFoundException {
-        WordprocessingMLPackage wordMLPackage;
-        if (inputfilepath==null) {
-            wordMLPackage = WordprocessingMLPackage.createPackage();
-        } else {
-            wordMLPackage = Docx4J.load(new File(inputfilepath));
-        }
-        HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
-
-        String imgfilepath = outDirPath+"\\"+ MD5Util.md5(outfilepath)+"_files";
-        htmlSettings.setImageDirPath(imgfilepath);
-        htmlSettings.setImageTargetUri(imgfilepath);
-        htmlSettings.setWmlPackage(wordMLPackage);
-
-        SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler());
-
-        OutputStream os;
-        if (save) {
-            os = new FileOutputStream(outfilepath);
-        } else {
-            os = new ByteArrayOutputStream();
-        }
-
-        Docx4jProperties.setProperty("docx4j.Convert.Out.HTML.OutputMethodXML", true);
-
-		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_NONE);
-        if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
-            wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
-        }
-        // This would also do it, via finalize() methods
-        htmlSettings = null;
-        wordMLPackage = null;
-    }
-
     static void parseHtml(String htmlInputFilePath,String outfilepath) throws IOException {
         File inputFile = new File(htmlInputFilePath);
         Document doc = Jsoup.parse(inputFile, "UTF-8");

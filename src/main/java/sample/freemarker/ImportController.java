@@ -53,9 +53,12 @@ public class ImportController {
         for (String filepath : docList) {
             File file = new File(filepath);
             String filename = file.getName();
+            if(filename.toLowerCase().endsWith(".docx")){
+                continue;
+            }
             try {
                 String outHtmlFilePath = outDirPathTemp+"\\"+filename.replace(".doc",".html");
-                ImportTool.toHtml(filepath,outHtmlFilePath);
+                FileUtil.docToHtml(filepath,outHtmlFilePath);
 
                 String outDocxFilePath = filepath.replace("\\doc\\","\\out\\");
                 outDocxFilePath = outDocxFilePath.replace(".doc",".xls");
@@ -63,7 +66,7 @@ public class ImportController {
                 if(!outfile.getParentFile().exists()){
                     outfile.getParentFile().mkdirs();
                 }
-                ImportTool.improtExcel(outHtmlFilePath,outDocxFilePath);
+                ImportTool.improtExcel(filepath,outHtmlFilePath,outDocxFilePath);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -95,9 +98,12 @@ public class ImportController {
         for (String filepath : fileList) {
             File file = new File(filepath);
             String filename = file.getName();
+            if(filename.toLowerCase().endsWith(".doc")){
+                continue;
+            }
             try {
                 String outHtml1FilePath = outDirPathTemp+"\\"+filename+"-1.html";
-                BqTool.toHtml(filepath,outHtml1FilePath,outDirPathTemp);
+                FileUtil.docxToHtml(filepath,outHtml1FilePath,outDirPathTemp);
                 String outHtml2FilePath = outDirPathTemp+"\\"+filename+"-2.html";
                 BqTool.parseHtml(outHtml1FilePath,outHtml2FilePath);
 
