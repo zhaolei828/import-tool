@@ -1,6 +1,7 @@
 package sample.freemarker;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
@@ -13,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,12 +27,14 @@ import java.util.regex.Pattern;
 public class ImportTool {
 
     public static void improtExcel(String docPath,String htmlPath,String excelPath) throws Exception{
-        org.jsoup.nodes.Document doc = Jsoup.parse(new File(htmlPath), "UTF-8");
+        File htmlFile = new File(htmlPath);
+        org.jsoup.nodes.Document doc = Jsoup.parse(htmlFile, "UTF-8");
         Element body = doc.body();
         Elements elements = body.children();
         List<Element> pElementList = Lists.newArrayList();
         for (Element element : elements) {
             if(element.tag().getName().equals("p")){
+                element.html(element.html().replaceAll("&nbsp;"," "));
                 pElementList.add(element);
             }
         }
@@ -203,17 +207,58 @@ public class ImportTool {
             System.out.println(timu.getXuanxiang());
             System.out.println("=============");
         }
-        if(blankDaAnCount/timuList.size() > 0.5){
+
+        if(timuList.size() > 0 && blankDaAnCount/timuList.size() > 0.5){
             File ansFile = findAnsFile(docPath);
-            File qHtmlFile = new File(htmlPath);
-            File qHtmlParentDirFile = qHtmlFile.getParentFile();
+            File qHtmlParentDirFile = htmlFile.getParentFile();
             if(null != ansFile){
                 String ansHtmlFilePath = qHtmlParentDirFile.getAbsolutePath() + "\\" + ansFile.getName() + "_.html";
                 FileUtil.docxToHtml(ansFile.getAbsolutePath(),ansHtmlFilePath,qHtmlParentDirFile.getAbsolutePath());
 
+                //解析答案文档
+                org.jsoup.nodes.Document ansDoc = Jsoup.parse(new File(ansHtmlFilePath), "UTF-8");
+                Elements ansElements = ansDoc.getElementsByClass("DocDefaults");
+                int ansIndex = 0;
+                for (Element ansElement : ansElements) {
+                    ansElement.html(ansElement.html().replaceAll("&nbsp;"," "));
+                }
+                for (Element element : ansElements) {
+                    if (isTiGan(element)) {
+                        StringBuffer ansStringBuffer = new StringBuffer();
+                        String ansContent = getBiaoQianText(element,ansStringBuffer);
+                        ansContent = ansContent.substring(ansContent.indexOf(".")+1);
+                        timuList.get(ansIndex).setDaan(ansContent);
+                        ansIndex++;
+                    }
+                }
             }
         }
-        writeIntoExcel(timuList,excelPath);
+
+        String htmlFullName = htmlFile.getName();
+        String htmlName = htmlFullName.substring(0,htmlFullName.lastIndexOf("."));
+        Map<String,String> extraMap = getExtraMap(htmlName);
+        writeIntoExcel(timuList, excelPath, extraMap);
+    }
+
+    static Map<String,String> getExtraMap(String fileName){
+        String bianHao = "";
+        try{bianHao = regMatchGetString(fileName,"(：|:)\\d+").substring(1);}catch (Exception e){}
+        String nianFen = "";
+        try{nianFen = regMatchGetString(fileName,"\\d{4}年");}catch (Exception e) {}
+        String xueKe = "";
+        try{xueKe = regMatchGetString(fileName,"(数学|物理|化学)");}catch (Exception e) {}
+        String shengFen = "";
+        try{shengFen = regMatchGetString(fileName,"年([\\u4e00-\\u9fa5]+)省").substring(1);}catch (Exception e) {}
+        String chengShi = "";
+        try{chengShi = regMatchGetString(fileName,"省([\\u4e00-\\u9fa5]+)市").substring(1);}catch (Exception e) {}
+
+        Map<String,String> extraMap = Maps.newHashMap();
+        extraMap.put("BianHao",bianHao);
+        extraMap.put("XueKe",xueKe);
+        extraMap.put("ShengFen",shengFen);
+        extraMap.put("ChengShi",chengShi);
+        extraMap.put("NianFen",nianFen);
+        return extraMap;
     }
 
     static File findAnsFile(String docPath){
@@ -258,6 +303,14 @@ public class ImportTool {
                 tiMuElementList = Lists.newArrayList();
             }
             tiMuElementList.add(element);
+
+            if(pElementList.indexOf(element) == pElementList.size()-1){
+                if (txName.trim().length()>0){
+                    Element txElement = createElement(txNameTemp);
+                    tiMuElementList.add(txElement);
+                }
+                returnList.add(tiMuElementList);
+            }
         }
         return returnList;
     }
@@ -302,6 +355,16 @@ public class ImportTool {
             name = nameText.substring(nameText.indexOf("、")+1,nameText.indexOf("（")).trim();
         }
         return name;
+    }
+
+    static String regMatchGetString(String inString,String regEx){
+        String outString = "";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(inString);
+        while (m.find()){
+            outString = m.group();
+        }
+        return outString;
     }
 
     public static Element createElement(String elementName){
@@ -393,16 +456,20 @@ public class ImportTool {
     }
 
     public static String getBiaoQianText(Element element,StringBuffer sb){
-        sb.append(element.text().trim()+"\n");
+        if(element.text().trim().length() > 0){
+            sb.append(element.text().trim()+"\n");
+        }
         Element nextElement = element.nextElementSibling();
-        String regEx="^(〖|【)([\\u4e00-\\u9fa5]+)(〗|】)";
-        if (!isTiGan(nextElement) && !isBiaoQian(nextElement,regEx)) {
-            getBiaoQianText(nextElement,sb);
+        if(null != nextElement){
+            String regEx="^(〖|【)([\\u4e00-\\u9fa5]+)(〗|】)";
+            if (!isTiGan(nextElement) && !isBiaoQian(nextElement,regEx)) {
+                getBiaoQianText(nextElement,sb);
+            }
         }
         return sb.toString();
     }
 
-    public static void  writeIntoExcel(List<Timu> list,String excelPath) throws IOException {
+    public static void  writeIntoExcel(List<Timu> list,String excelPath,Map<String,String> extraMap) throws IOException {
         Workbook wb = new XSSFWorkbook();
         Sheet s = wb.createSheet();
 
@@ -426,10 +493,26 @@ public class ImportTool {
             c.setCellStyle(style);
         }
 
-
         for(int rownum = 1; rownum <= list.size(); rownum++) {
             Row r = s.createRow(rownum);
             Timu timu = list.get(rownum-1);
+            if (null != extraMap) {
+                Cell cBianHao = r.createCell(headList.indexOf("编号*"));
+                cBianHao.setCellValue(extraMap.get("BianHao"));
+
+                Cell cXueKe = r.createCell(headList.indexOf("学科*"));
+                cXueKe.setCellValue(extraMap.get("XueKe"));
+
+                Cell cShengFen = r.createCell(headList.indexOf("省份"));
+                cShengFen.setCellValue(extraMap.get("ShengFen"));
+
+                Cell cChengShi = r.createCell(headList.indexOf("城市"));
+                cChengShi.setCellValue(extraMap.get("ChengShi"));
+
+                Cell cNianFen = r.createCell(headList.indexOf("年份"));
+                cNianFen.setCellValue(extraMap.get("NianFen"));
+            }
+
             Cell cTiGan = r.createCell(headList.indexOf("题干"));
             cTiGan.setCellValue(timu.getTigan());
 
