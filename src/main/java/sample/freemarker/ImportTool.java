@@ -207,8 +207,8 @@ public class ImportTool {
             File ansFile = findAnsFile(docPath);
             File qHtmlFile = new File(htmlPath);
             File qHtmlParentDirFile = qHtmlFile.getParentFile();
-            String ansHtmlFilePath = qHtmlParentDirFile.getAbsolutePath() + "\\" + ansFile.getName() + "_.html";
             if(null != ansFile){
+                String ansHtmlFilePath = qHtmlParentDirFile.getAbsolutePath() + "\\" + ansFile.getName() + "_.html";
                 FileUtil.docxToHtml(ansFile.getAbsolutePath(),ansHtmlFilePath,qHtmlParentDirFile.getAbsolutePath());
 
             }
@@ -219,14 +219,14 @@ public class ImportTool {
     static File findAnsFile(String docPath){
         File docFile = new File(docPath);
         String docFileName = docFile.getName();
-        String docName = docFileName.substring(0,docFileName.lastIndexOf("."));
+        String docName = docFileName.split("试题")[0];
         File parentDirFile = docFile.getParentFile();
         if (parentDirFile.isDirectory()){
             File[] sonFiles = parentDirFile.listFiles();
             for (File sonFile:sonFiles) {
                 String sonFileName = sonFile.getName();
                 String sonName = sonFileName.substring(0,sonFileName.lastIndexOf("."));
-                String regex = "([\\u4e00-\\u9fa5]*)"+docName+"答案([\\u4e00-\\u9fa5]*)";
+                String regex = "(.*)"+docName+"(.*)答案(.*)";
                 Pattern p = Pattern.compile(regex);
                 Matcher m = p.matcher(sonName);
                 if(m.find()){
