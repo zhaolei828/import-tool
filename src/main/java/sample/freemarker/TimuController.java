@@ -27,11 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Controller
-public class ImportController {
-    Log log = LogFactory.getLog(ImportController.class);
+public class TimuController {
+    Log log = LogFactory.getLog(TimuController.class);
 
     @RequestMapping(value = "/to_import", method = RequestMethod.GET)
 	public String toImport(Map<String, Object> model) {
@@ -154,19 +153,49 @@ public class ImportController {
             if(filename.toLowerCase().endsWith(".doc")){
                 continue;
             }
+            String outHtml1FilePath = "";
             try {
-                String outHtml1FilePath = outDirPathTemp+"\\"+filename+"-1.html";
-                FileUtil.docxToHtml(filepath,outHtml1FilePath,outDirPathTemp);
-                String outHtml2FilePath = outDirPathTemp+"\\"+filename+"-2.html";
-                BqTool.parseHtml(outHtml1FilePath,outHtml2FilePath);
+                outHtml1FilePath = outDirPathTemp+"\\"+filename+"-1.html";
+                FileUtil.docxToHtml(filepath, outHtml1FilePath, outDirPathTemp);
+            } catch (Exception e) {
+                String errormsg = "读取07版word文档失败！";
+                String extramsg = "请检查文档后后重试。文件：" + filepath;
+                String desc = "";
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+                return "error";
+            }
 
+            String outHtml2FilePath = "";
+            try {
+                outHtml2FilePath = outDirPathTemp+"\\"+filename+"-2.html";
+                BqTool.parseHtml(outHtml1FilePath, outHtml2FilePath);
+            } catch (Exception e) {
+                String errormsg = "解析临时html-1失败！";
+                String extramsg = "请检查文档后后重试。文件：" + outHtml1FilePath;
+                String desc = "";
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+                return "error";
+            }
+
+            try {
                 String outDocxFilePath = filepath.replace("\\docx\\","\\out\\");
                 BqTool.toDocx(outHtml2FilePath,outDocxFilePath);
             }catch (Exception e){
-                e.printStackTrace();
+                String errormsg = "html-2转docx失败！";
+                String extramsg = "请检查文档后后重试。文件：" + outHtml2FilePath;
+                String desc = "";
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+                return "error";
             }
 
         }
-        return "bq";
+        String msg = "调整标签位置成功！";
+        String extramsg = "";
+        String desc = "";
+        model.put("msg", StringUtil.htmlmsg(msg, extramsg,desc));
+        return "success";
     }
 }

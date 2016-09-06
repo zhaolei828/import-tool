@@ -183,7 +183,7 @@ public class BqTool {
             }
         }
 
-        String html="<html><head><meta content=\"text/html; charset=GB2312\" http-equiv=\"Content-Type\" /></head><body>";
+        String html="<html><head><meta content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\" /></head><body>";
         html += toElements.outerHtml();
         html += "</body></html>";
         FileOutputStream fos = new FileOutputStream(outfilepath,false);
@@ -199,7 +199,7 @@ public class BqTool {
         if(!outDirFilePath.exists()){
             outDirFilePath.mkdirs();
         }
-        Document doc = Jsoup.parse(inputFile,"GB2312");
+        Document doc = Jsoup.parse(inputFile,"UTF-8");
         doc.outputSettings()
                 .syntax(Document.OutputSettings.Syntax.xml)
                 .escapeMode(Entities.EscapeMode.xhtml);
@@ -212,53 +212,6 @@ public class BqTool {
 
         wordMLPackage.save(new File(outfilepath));
     }
-
-//    public static void doit(String[] args) throws IOException, Docx4JException {
-//        fileList(args[0]+"\\docx");
-//        outDirPathTemp = args[0]+"\\"+outDirPathTemp;
-//        outDirPath = args[0]+"\\"+outDirPath;
-//        File outTempDir = new File(outDirPathTemp);
-//        if(!outTempDir.exists()){
-//            outTempDir.mkdirs();
-//        }
-//        File outDir = new File(outDirPath);
-//        if(!outDir.exists()){
-//            outDir.mkdirs();
-//        }
-//        for (String filepath : fileList) {
-//            File file = new File(filepath);
-//            String filename = file.getName();
-//            try {
-//                String outHtml1FilePath = outDirPathTemp+"\\"+filename+"-1.html";
-//                toHtml(filepath,outHtml1FilePath);
-//                String outHtml2FilePath = outDirPathTemp+"\\"+filename+"-2.html";
-//                parseHtml(outHtml1FilePath,outHtml2FilePath);
-//
-//                String outDocxFilePath = filepath.replace("\\docx\\","\\out\\");
-//                toDocx(outHtml2FilePath,outDocxFilePath);
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//
-//        }
-//    }
-
-//    static List<String> fileList = Lists.newArrayList();
-//    public static List<String> fileList(String dirPath){
-//        File dirFile = new File(dirPath);
-//        String[] sonFilePaths = dirFile.list();
-//        for (String sonFilePath : sonFilePaths) {
-//            File sonFile = new File(dirPath+"\\"+sonFilePath);
-//            if (sonFile.isDirectory()){
-//                fileList(dirPath+"\\"+sonFilePath);
-//            }else {
-//                String filename = sonFile.getName();
-//                if(filename.toLowerCase().endsWith("docx")){
-//                    fileList.add(dirPath+"\\"+sonFilePath);
-//                }
-//            }
-//        }
-//    }
 
     public static String getNumber(String str){
         String regEx="[^0-9]";
