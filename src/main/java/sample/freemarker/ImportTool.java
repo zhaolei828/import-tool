@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
@@ -28,7 +29,7 @@ public class ImportTool {
 
     public static void improtExcel(String docPath,String htmlPath,String excelPath) throws Exception{
         File htmlFile = new File(htmlPath);
-        org.jsoup.nodes.Document doc = Jsoup.parse(htmlFile, "UTF-8");
+        Document doc = Jsoup.parse(htmlFile, "UTF-8");
         Element body = doc.body();
         Elements elements = body.children();
         List<Element> pElementList = Lists.newArrayList();
@@ -64,7 +65,14 @@ public class ImportTool {
                 //题干
                 if (isTiGan(element)){
                     tigan = element.text();
-                    tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
+                    try {
+                        tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
+                    }catch (Exception e) {
+                        if (tigan.length() > 15) {
+                            tigan = tigan.substring(0,10);
+                        }
+                        throw new ReadDataException("500","GetTiGanException","读取题干异常：请检查题干格式。：["+tigan+"]");
+                    }
                     appenTiGanFlag = true;
                     continue;
                 }
@@ -106,14 +114,19 @@ public class ImportTool {
                         jieXiBuffer.append(daAnJieXiArr[1]);
                     }
                 }
-//                if(isXiaoTi(element) && !notDaAnFlag){
-//                    daAnBuffer.append(element.text()+"\n");
-//                }
+
                 //解析
                 if (isJieXi(element)){
                     StringBuffer jiexiBufferTemp = new StringBuffer();
                     String jieXiFull = getBiaoQianText(element,jiexiBufferTemp);
-                    jieXiBuffer.append(jieXiFull.split("(〖|【)?(解析|过程|分析)(:|：)?(〗|】)?")[1]);
+                    try {
+                        jieXiBuffer.append(jieXiFull.split("(〖|【)?(解析|过程|分析)(:|：)?(〗|】)?")[1]);
+                    }catch (Exception e) {
+                        if (jieXiFull.length() > 15) {
+                            jieXiFull = jieXiFull.substring(0,10);
+                        }
+                        throw new ReadDataException("500","GetJieXiException","读取解析异常：请检查格式。：["+jieXiFull+"]");
+                    }
                 }
 
                 //题型
@@ -123,7 +136,7 @@ public class ImportTool {
                     try {
                         tixing = tixingText.substring(tixingText.indexOf("】")+1);
                     }catch (Exception e){
-
+                        throw new ReadDataException("500","GetTiXingException","读取题型异常：请检查格式。：["+tixing+"]");
                     }
                     if(tixing.trim().equals("填空题")){
                         timu.setTixing("综合填空");
@@ -153,7 +166,7 @@ public class ImportTool {
                         }
                         zsd = zsdText.substring(zsdText.indexOf("】")+1,endIndex);
                     }catch (Exception e){
-
+                        throw new ReadDataException("500","GetZsdException","读取三级知识点异常：请检查格式。：["+zsdText+"]");
                     }
                     if(zsd.trim().length()>0){
                         if(zsd.contains(" ")){
@@ -186,7 +199,7 @@ public class ImportTool {
                         }
                         zsd4 = zsd4_Text.substring(zsd4_Text.indexOf("】")+1,endIndex);
                     }catch (Exception e){
-
+                        throw new ReadDataException("500","GetZsdException","读取四级知识点异常：请检查格式。：["+zsd4_Text+"]");
                     }
                     if(zsd4.trim().length()>0){
                         if(zsd4.contains(" ")){
@@ -207,7 +220,7 @@ public class ImportTool {
                     try {
                         nengli = nengliText.substring(nengliText.indexOf("】")+1);
                     }catch (Exception e){
-
+                        throw new ReadDataException("500","GetNljgException","读取能力结构异常：请检查格式。：["+nengliText+"]");
                     }
                     timu.setNljg(nengli);
                 }
@@ -219,7 +232,7 @@ public class ImportTool {
                     try {
                         pingjia = pingJiaText.substring(pingJiaText.indexOf("】")+1);
                     }catch (Exception e){
-
+                        throw new ReadDataException("500","GetPingJiaException","读取评价异常：请检查格式。：["+pingJiaText+"]");
                     }
                     timu.setPingjia(pingjia);
                 }
@@ -247,7 +260,11 @@ public class ImportTool {
             File qHtmlParentDirFile = htmlFile.getParentFile();
             if(null != ansFile){
                 String ansHtmlFilePath = qHtmlParentDirFile.getAbsolutePath() + "\\" + ansFile.getName() + "_.html";
-                FileUtil.docxToHtml(ansFile.getAbsolutePath(),ansHtmlFilePath,qHtmlParentDirFile.getAbsolutePath());
+                try{
+                    FileUtil.docxToHtml(ansFile.getAbsolutePath(), ansHtmlFilePath, qHtmlParentDirFile.getAbsolutePath());
+                } catch (Exception e) {
+                    throw new LeiRuntimeException("500","DocxToHtmlException","转html异常。：["+ansFile.getAbsolutePath()+"]");
+                }
 
                 //解析答案文档
                 org.jsoup.nodes.Document ansDoc = Jsoup.parse(new File(ansHtmlFilePath), "UTF-8");
@@ -260,8 +277,16 @@ public class ImportTool {
                     if (isTiGan(element)) {
                         StringBuffer ansStringBuffer = new StringBuffer();
                         String ansContent = getBiaoQianText(element,ansStringBuffer);
-                        ansContent = ansContent.substring(ansContent.indexOf(".")+1);
-                        timuList.get(ansIndex).setDaan(ansContent);
+                        try{
+                            ansContent = ansContent.substring(ansContent.indexOf(".")+1);
+                        } catch (Exception e) {
+                            throw new ReadDataException("500","GetAnsDocsContentException","获取答案文档的内容异常。：["+ansContent+"]");
+                        }
+                        try{
+                            timuList.get(ansIndex).setDaan(ansContent);
+                        } catch (Exception e) {
+                            throw new ReadDataException("500","GetAnsDocsContentException","题目数量和答案数量不匹配。：[题目数量："+timuList.size() +"， 当前正在读取："+ (ansIndex+1)+"]");
+                        }
                         ansIndex++;
                     }
                 }
@@ -276,7 +301,7 @@ public class ImportTool {
 
     static Map<String,String> getExtraMap(String fileName){
         String bianHao = "";
-        try{bianHao = regMatchGetString(fileName,"(：|:)\\d+").substring(1);}catch (Exception e){}
+        try{bianHao = regMatchGetString(fileName,"(：|:)\\d+").substring(1);}catch (Exception e) {}
         String nianFen = "";
         try{nianFen = regMatchGetString(fileName,"\\d{4}年");}catch (Exception e) {}
         String xueKe = "";
@@ -316,7 +341,7 @@ public class ImportTool {
         return null;
     }
 
-    public static List<List<Element>> regroup(List<Element> pElementList){
+    public static List<List<Element>> regroup(List<Element> pElementList) throws BusinessException {
         List<List<Element>> returnList = Lists.newArrayList();
         List<Element> tiMuElementList = Lists.newArrayList();
         String txName = "";
@@ -374,7 +399,7 @@ public class ImportTool {
         return isBiaoQian(element,regEx);
     }
 
-    public static String getDaTi(Element element){
+    public static String getDaTi(Element element) throws ReadDataException{
         //^[一|二|三|四|五|六|七|八|九|十]、.+
         String name = "";
         String text = element.text();
@@ -386,7 +411,14 @@ public class ImportTool {
             nameText = m.group();
         }
         if(!nameText.trim().equals("")){
-            name = nameText.substring(nameText.indexOf("、")+1,nameText.indexOf("（")).trim();
+            try {
+                name = nameText.substring(nameText.indexOf("、")+1,nameText.indexOf("题")+1).trim();
+            }catch (Exception e) {
+                if (text.length() > 15) {
+                    text = text.substring(0,10);
+                }
+                throw new ReadDataException("500","GetDaTiException","读取大题异常：请检查是否有“、和‘题’”。：["+text+"]");
+            }
         }
         return name;
     }

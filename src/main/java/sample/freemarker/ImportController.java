@@ -44,7 +44,16 @@ public class ImportController {
         String outDirPathTemp = docPath+"\\out-temp";
         String outDirPath = docPath+"\\out";
         List<String> docList = Lists.newArrayList();
-        docList = FileUtil.getFileList(docPath+"\\doc",docList);
+        try{
+            docList = FileUtil.getFileList(docPath+"\\doc",docList);
+        } catch (Exception e) {
+            String errormsg = "获取文件列表失败！";
+            String extramsg = "请检查路径是否正确。文件夹：" + docPath + "\\doc";
+            String desc = "";
+            log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+            model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+            return "error";
+        }
 
         File outTempDir = new File(outDirPathTemp);
         if(!outTempDir.exists()){
@@ -60,23 +69,54 @@ public class ImportController {
             if(filename.toLowerCase().endsWith(".docx")){
                 continue;
             }
-            try {
-                String outHtmlFilePath = outDirPathTemp+"\\"+filename.replace(".doc",".html");
-                FileUtil.docToHtml(filepath,outHtmlFilePath);
 
-                String outDocxFilePath = filepath.replace("\\doc\\","\\out\\");
-                outDocxFilePath = outDocxFilePath.replace(".doc",".xls");
-                File outfile = new File(outDocxFilePath);
+            String outHtmlFilePath = "";
+
+            try {
+                outHtmlFilePath = outDirPathTemp+"\\"+filename.replace(".doc",".html");
+                FileUtil.docToHtml(filepath,outHtmlFilePath);
+            } catch (Exception e) {
+                String errormsg = "读取03版word文档失败！";
+                String extramsg = "请另存为03版doc文档后重试。文件：" + filepath;
+                String desc = "";
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+                return "error";
+            }
+
+            try {
+                String outDocFilePath = filepath.replace("\\doc\\","\\out\\");
+                outDocFilePath = outDocFilePath.replace(".doc",".xls");
+                File outfile = new File(outDocFilePath);
                 if(!outfile.getParentFile().exists()){
                     outfile.getParentFile().mkdirs();
                 }
-                ImportTool.improtExcel(filepath,outHtmlFilePath,outDocxFilePath);
-            }catch (Exception e){
-                log.error("Import error!\nFile:"+filename,e);
+                ImportTool.improtExcel(filepath,outHtmlFilePath,outDocFilePath);
+            }
+            catch (ReadDataException e){
+                String errormsg = "导入失败！";
+                String extramsg = "文件：" + filepath;
+                String desc = e.getDesc();
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg, extramsg,desc));
+                return "error";
+            }
+            catch (Exception e){
+                String errormsg = "导入失败！";
+                String extramsg = "请检查格式是否正确后再试。文件：" + filepath;
+                String desc = "";
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg, extramsg,desc));
+                return "error";
             }
 
         }
-        return "import";
+
+        String msg = "导入成功！";
+        String extramsg = "";
+        String desc = "";
+        model.put("msg", StringUtil.htmlmsg(msg, extramsg,desc));
+        return "success";
     }
 
     @RequestMapping(value = "/to_bq", method = RequestMethod.GET)
@@ -90,7 +130,16 @@ public class ImportController {
         String outDirPathTemp = docxPath+"\\out-temp";
         String outDirPath = docxPath+"\\out";
         List<String> fileList = Lists.newArrayList();
-        fileList = FileUtil.getFileList(docxPath+"\\docx",fileList);
+        try {
+            fileList = FileUtil.getFileList(docxPath+"\\docx",fileList);
+        } catch (Exception e) {
+            String errormsg = "获取文件列表失败！";
+            String extramsg = "请检查路径是否正确。文件夹：" + docxPath + "\\docx";
+            String desc = "";
+            log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+            model.put("error_msg", StringUtil.htmlmsg(errormsg,extramsg,desc));
+            return "error";
+        }
         File outTempDir = new File(outDirPathTemp);
         if(!outTempDir.exists()){
             outTempDir.mkdirs();

@@ -8,7 +8,7 @@
     <meta name="author" content="fyunli">
 
     <base id="base" href="${base}">
-    <title>工具 - ERROR</title>
+    <title>工具 - SUCCESS</title>
 
     <!-- Bootstrap core CSS -->
     <link href="//cdn.jsdelivr.net/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
@@ -28,7 +28,7 @@
     </div>
 
     <div>
-        <p class="lead">${error_msg}</p>
+        <p class="lead">${msg}</p>
     </div>
 
 </body>

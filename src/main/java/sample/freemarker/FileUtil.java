@@ -26,7 +26,7 @@ import java.util.List;
  * Time: 下午2:10
  */
 public class FileUtil {
-    public static List<String> getFileList(String dirPath,List<String> fileList){
+    public static List<String> getFileList(String dirPath,List<String> fileList) throws Exception{
         File dirFile = new File(dirPath);
         String[] sonFilePaths = dirFile.list();
         for (String sonFilePath : sonFilePaths) {
