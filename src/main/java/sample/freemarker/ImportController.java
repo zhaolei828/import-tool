@@ -17,6 +17,8 @@
 package sample.freemarker;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,9 +27,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Controller
 public class ImportController {
+    Log log = LogFactory.getLog(ImportController.class);
 
     @RequestMapping(value = "/to_import", method = RequestMethod.GET)
 	public String toImport(Map<String, Object> model) {
@@ -68,7 +72,7 @@ public class ImportController {
                 }
                 ImportTool.improtExcel(filepath,outHtmlFilePath,outDocxFilePath);
             }catch (Exception e){
-                e.printStackTrace();
+                log.error("Import error!\nFile:"+filename,e);
             }
 
         }

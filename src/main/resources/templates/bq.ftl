@@ -8,7 +8,7 @@
     <meta name="author" content="fyunli">
 
     <base id="base" href="${base}">
-    <title>调整标签位置</title>
+    <title>工具 - 调整标签位置</title>
 
     <!-- Bootstrap core CSS -->
     <link href="//cdn.jsdelivr.net/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">

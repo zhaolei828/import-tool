@@ -43,7 +43,7 @@ public class FileUtil {
         return fileList;
     }
 
-    public static void docxToHtml(String inputfilepath,String outfilepath,String outDirPath) throws Docx4JException, FileNotFoundException {
+    public static void docxToHtml(String inputfilepath,String outfilepath,String outDirPath) throws Docx4JException, IOException {
         WordprocessingMLPackage wordMLPackage;
         if (inputfilepath==null) {
             wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -70,6 +70,7 @@ public class FileUtil {
         // This would also do it, via finalize() methods
         htmlSettings = null;
         wordMLPackage = null;
+        os.close();
     }
 
     public static void docToHtml(String filePath,String outFilePath) throws Exception {
