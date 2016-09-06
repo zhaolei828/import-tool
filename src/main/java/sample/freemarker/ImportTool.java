@@ -63,7 +63,8 @@ public class ImportTool {
                 System.out.println("[*] "+element.text());
                 //题干
                 if (isTiGan(element)){
-                    tigan = element.text()+"\n";
+                    tigan = element.text();
+                    tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
                     appenTiGanFlag = true;
                     continue;
                 }
@@ -524,6 +525,12 @@ public class ImportTool {
 
             Cell cJieXi = r.createCell(headList.indexOf("解析"));
             cJieXi.setCellValue(timu.getJiexi());
+
+            Cell cPingJia = r.createCell(headList.indexOf("试题评价"));
+            cPingJia.setCellValue(timu.getPingjia());
+
+            Cell cNljg = r.createCell(headList.indexOf("能力结构"));
+            cNljg.setCellValue(timu.getNljg());
 
             Cell cTiXing = r.createCell(headList.indexOf("题型*"));
             cTiXing.setCellValue(timu.getTixing());
