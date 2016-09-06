@@ -11,6 +11,7 @@ public class Timu {
     private String jiexi;
     private String tixing;
     private String[] zsdArr;
+    private String[] zsd4_Arr;
     private String nljg;
     private String pingjia;
 
@@ -76,5 +77,13 @@ public class Timu {
 
     public void setPingjia(String pingjia) {
         this.pingjia = pingjia;
+    }
+
+    public String[] getZsd4_Arr() {
+        return zsd4_Arr;
+    }
+
+    public void setZsd4_Arr(String[] zsd4_Arr) {
+        this.zsd4_Arr = zsd4_Arr;
     }
 }

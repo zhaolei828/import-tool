@@ -167,6 +167,39 @@ public class ImportTool {
                     timu.setZsdArr(zsdArr);
                 }
 
+                if (isZsd4(element)) {
+                    String zsd4_Text = element.text();
+                    String zsd4 = "";
+                    String[] zsd4_Arr = null;
+                    try {
+                        int endIndex = zsd4_Text.length();
+                        if (zsd4_Text.contains("答案")){
+                            endIndex = zsd4_Text.indexOf("答案");
+                            String daanJieXi = zsd4_Text.split("答案(:|：)?")[1];
+                            String[] daanJiexiArr = daanJieXi.split("(解析|过程|分析)(:|：)?");
+                            String daan = daanJiexiArr[0];
+                            if(daanJiexiArr.length>1){
+                                String jiexi = daanJiexiArr[1];
+                                jieXiBuffer.append(jiexi);
+                            }
+                            daAnBuffer.append(daan);
+                        }
+                        zsd4 = zsd4_Text.substring(zsd4_Text.indexOf("】")+1,endIndex);
+                    }catch (Exception e){
+
+                    }
+                    if(zsd4.trim().length()>0){
+                        if(zsd4.contains(" ")){
+                            zsd4_Arr = zsd4.split(" ");
+                        }else if(zsd4.contains("；")){
+                            zsd4_Arr = zsd4.split("；");
+                        }else {
+                            zsd4_Arr = new String[]{zsd4};
+                        }
+                    }
+                    timu.setZsd4_Arr(zsd4_Arr);
+                }
+
                 //能力结构
                 if (isNengLiJieGou(element)) {
                     String nengliText = element.text();
@@ -399,6 +432,11 @@ public class ImportTool {
         return isBiaoQian(element,regEx);
     }
 
+    public static boolean isZsd4(Element element){
+        String regEx="(〖|【)?\\s*(四级知识点)(〗|】)?.+";
+        return isBiaoQian(element,regEx);
+    }
+
     public static boolean isNengLiJieGou(Element element){
         String regEx="^(〖|【)?能力结构(〗|】)?.+";
         return isBiaoQian(element,regEx);
@@ -485,7 +523,8 @@ public class ImportTool {
 
         String[] head = new String[]{"编号*","学科*","省份","城市","年份","题型*","错误率","题干","备选答案",
                 "正确答案","解析"	,"试题评价","典型题","能力结构","来源","是否有视频","视频文件","视频质量","视频类型"
-                ,"第三级知识点1","第三级知识点2","第三级知识点3","第三级知识点4","第三级知识点5"};
+                ,"第三级知识点1","第三级知识点2","第三级知识点3","第三级知识点4","第三级知识点5"
+                ,"第四级知识点1","第四级知识点2","第四级知识点3","第四级知识点4","第四级知识点5"};
         List<String> headList = Arrays.asList(head);
         Row r0 = s.createRow(0);
         for(int cellnum = 0; cellnum < head.length; cellnum ++) {
@@ -540,6 +579,14 @@ public class ImportTool {
                 for (int i = 1; i <= zsdArr.length; i++) {
                     Cell cZsd = r.createCell(headList.indexOf("第三级知识点"+i));
                     cZsd.setCellValue(zsdArr[i-1]);
+                }
+            }
+
+            String[] zsd4_Arr = timu.getZsd4_Arr();
+            if (null != zsd4_Arr && zsd4_Arr.length > 0) {
+                for (int i = 1; i <= zsd4_Arr.length; i++) {
+                    Cell cZsd4 = r.createCell(headList.indexOf("第四级知识点"+i));
+                    cZsd4.setCellValue(zsd4_Arr[i-1]);
                 }
             }
         }
