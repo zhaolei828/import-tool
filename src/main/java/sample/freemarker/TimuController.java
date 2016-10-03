@@ -100,6 +100,14 @@ public class TimuController {
                 model.put("error_msg", StringUtil.htmlmsg(errormsg, extramsg,desc));
                 return "error";
             }
+            catch (WriteIntoExcelException e){
+                String errormsg = "导入失败！";
+                String extramsg = "文件：" + filepath;
+                String desc = e.getDesc();
+                log.error(StringUtil.logmsg(errormsg,extramsg,desc), e);
+                model.put("error_msg", StringUtil.htmlmsg(errormsg, extramsg,desc));
+                return "error";
+            }
             catch (Exception e){
                 String errormsg = "导入失败！";
                 String extramsg = "请检查格式是否正确后再试。文件：" + filepath;

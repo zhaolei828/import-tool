@@ -65,14 +65,15 @@ public class ImportTool {
                 //题干
                 if (isTiGan(element)){
                     tigan = element.text();
-                    try {
-                        tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
-                    }catch (Exception e) {
-                        if (tigan.length() > 15) {
-                            tigan = tigan.substring(0,10);
-                        }
-                        throw new ReadDataException("500","GetTiGanException","读取题干异常：请检查题干格式。：["+tigan+"]");
-                    }
+                    //2.题干前面的题号是否可以带着 by 苏 《关于软件的几点改进意见.docx》
+//                    try {
+//                        tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
+//                    }catch (Exception e) {
+//                        if (tigan.length() > 15) {
+//                            tigan = tigan.substring(0,10);
+//                        }
+//                        throw new ReadDataException("500","GetTiGanException","读取题干异常：请检查题干格式。：["+tigan+"]");
+//                    }
                     appenTiGanFlag = true;
                     continue;
                 }
@@ -296,7 +297,11 @@ public class ImportTool {
         String htmlFullName = htmlFile.getName();
         String htmlName = htmlFullName.substring(0,htmlFullName.lastIndexOf("."));
         Map<String,String> extraMap = getExtraMap(htmlName);
-        writeIntoExcel(timuList, excelPath, extraMap);
+        try {
+            writeIntoExcel(timuList, excelPath, extraMap);
+        } catch (Exception e) {
+            throw new WriteIntoExcelException("500","WriteIntoExcelException","题目："+tgNow);
+        }
     }
 
     static Map<String,String> getExtraMap(String fileName){
@@ -375,7 +380,7 @@ public class ImportTool {
     }
 
     public static boolean isTiGan(Element element){
-        String regEx="^(\\d+(\\.|．)).+";
+        String regEx="^(\\(.*\\))?(（.*）)?(\\d+(\\.|．)).*";
         Element preElement = element.previousElementSibling();
         String preElementText = "";
         if(null != preElement){
@@ -510,7 +515,10 @@ public class ImportTool {
                     break;
                 default:break;
             }
-            sb.append(list.get(i)+"\n");
+            sb.append(list.get(i));
+            if(i != list.size()-1){
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }
@@ -540,6 +548,7 @@ public class ImportTool {
         return sb.toString();
     }
 
+    static String tgNow = "";
     public static void  writeIntoExcel(List<Timu> list,String excelPath,Map<String,String> extraMap) throws IOException {
         Workbook wb = new XSSFWorkbook();
         Sheet s = wb.createSheet();
@@ -565,9 +574,14 @@ public class ImportTool {
             c.setCellStyle(style);
         }
 
+        tgNow = "";
         for(int rownum = 1; rownum <= list.size(); rownum++) {
             Row r = s.createRow(rownum);
             Timu timu = list.get(rownum-1);
+            tgNow = timu.getTigan();
+            if(tgNow.length()>40){
+                tgNow = tgNow.substring(0,30)+"……";
+            }
             if (null != extraMap) {
                 Cell cBianHao = r.createCell(headList.indexOf("编号*"));
                 cBianHao.setCellValue(extraMap.get("BianHao"));
@@ -622,6 +636,7 @@ public class ImportTool {
                 }
             }
         }
+
         String filename = excelPath;
         if(wb instanceof XSSFWorkbook) {
             filename = filename + "x";
