@@ -242,15 +242,15 @@ public class ImportTool {
             timu.setXuanxiang(makeXuanxiang(xxList));
             String[] daAnArr = daAnBuffer.toString().split("(〖|【)?(答案|解|过程|分析)(:|：)?(〗|】)?");
             if (daAnArr.length>1){
-                timu.setDaan(daAnArr[1]);
+                timu.setDaan(daAnArr[1].trim());
             }else {
-                timu.setDaan(daAnArr[0]);
+                timu.setDaan(daAnArr[0].trim());
             }
             if(null == timu.getDaan() || timu.getDaan().length() == 0){
                 blankDaAnCount++;
             }
 
-            timu.setJiexi(jieXiBuffer.toString());
+            timu.setJiexi(jieXiBuffer.toString().trim());
             timuList.add(timu);
             System.out.println(timu.getXuanxiang());
             System.out.println("=============");
@@ -622,7 +622,11 @@ public class ImportTool {
 
             String[] zsdArr = timu.getZsdArr();
             if (null != zsdArr && zsdArr.length > 0) {
-                for (int i = 1; i <= zsdArr.length; i++) {
+                int zsdArr3Length = zsdArr.length;
+                if (zsdArr3Length>5){
+                    zsdArr3Length = 5;
+                }
+                for (int i = 1; i <= zsdArr3Length; i++) {
                     Cell cZsd = r.createCell(headList.indexOf("第三级知识点"+i));
                     cZsd.setCellValue(zsdArr[i-1]);
                 }
@@ -630,7 +634,11 @@ public class ImportTool {
 
             String[] zsd4_Arr = timu.getZsd4_Arr();
             if (null != zsd4_Arr && zsd4_Arr.length > 0) {
-                for (int i = 1; i <= zsd4_Arr.length; i++) {
+                int zsdArr4Length = zsd4_Arr.length;
+                if (zsdArr4Length>5){
+                    zsdArr4Length = 5;
+                }
+                for (int i = 1; i <= zsdArr4Length; i++) {
                     Cell cZsd4 = r.createCell(headList.indexOf("第四级知识点"+i));
                     cZsd4.setCellValue(zsd4_Arr[i-1]);
                 }
