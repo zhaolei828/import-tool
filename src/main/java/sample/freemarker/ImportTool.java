@@ -314,7 +314,7 @@ public class ImportTool {
         String nianFen = "";
         try{nianFen = regMatchGetString(fileName,"\\d{4}年");}catch (Exception e) {}
         String xueKe = "";
-        try{xueKe = regMatchGetString(fileName,"(数学|物理|化学)");}catch (Exception e) {}
+        try{xueKe = regMatchGetString(fileName,"(语文|英语|数学|物理|化学)");}catch (Exception e) {}
         String shengFen = "";
         try{shengFen = regMatchGetString(fileName,"年([\\u4e00-\\u9fa5]+)省").substring(1);}catch (Exception e) {}
         String chengShi = "";
