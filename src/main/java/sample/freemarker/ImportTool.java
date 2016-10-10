@@ -79,7 +79,7 @@ public class ImportTool {
                 }
 
                 //收集题干与小题之间的内容
-                if (appenTiGanFlag && !isXiaoTi(element)) {
+                if (appenTiGanFlag && !isXiaoTi(element) && !isXuanxiang(element)) {
                     if (element.text().trim().length() > 0) {
                         tiGanBuffer.append(element.text()+"\n");
                     }
@@ -95,12 +95,16 @@ public class ImportTool {
 
                 //选项
                 if(isXuanxiang(element)){
+                    if (isFirstXuanxiang(element)){
+                        xiaoTiBuffer.append(tiGanBuffer);
+                    }
                     String[] xx = splitXuanxiang(element);
                     for (String s : xx) {
                         if(!s.trim().equals("")){
                             xxList.add(s.trim());
                         }
                     }
+                    appenTiGanFlag = false;
                 }
                 //答案 or 答案里含解析
                 if (isDaAn(element)){
@@ -396,6 +400,11 @@ public class ImportTool {
 
     public static boolean isFirstXiaoTi(Element element){
         String regEx="^(（|\\()1(）|\\))";
+        return isBiaoQian(element,regEx);
+    }
+
+    public static boolean isFirstXuanxiang(Element element){
+        String regEx="^A(\\.|．)+";
         return isBiaoQian(element,regEx);
     }
 
