@@ -394,7 +394,7 @@ public class ImportTool {
     }
 
     public static boolean isXiaoTi(Element element){
-        String regEx="^(（|\\()\\d+(）|\\)).+";
+        String regEx="^((（|\\()\\d+(）|\\))|(①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮|⑯|⑰|⑱|⑲|⑳)).+";
         return isBiaoQian(element,regEx);
     }
 
@@ -585,6 +585,14 @@ public class ImportTool {
 
         tgNow = "";
         for(int rownum = 1; rownum <= list.size(); rownum++) {
+            //题号
+            String tiHao = "";
+            if(rownum < 10){
+                tiHao = "0" + rownum;
+            }else {
+                tiHao = rownum + "";
+            }
+
             Row r = s.createRow(rownum);
             Timu timu = list.get(rownum-1);
             tgNow = timu.getTigan();
@@ -593,7 +601,7 @@ public class ImportTool {
             }
             if (null != extraMap) {
                 Cell cBianHao = r.createCell(headList.indexOf("编号*"));
-                cBianHao.setCellValue(extraMap.get("BianHao"));
+                cBianHao.setCellValue(extraMap.get("BianHao") + tiHao);
 
                 Cell cXueKe = r.createCell(headList.indexOf("学科*"));
                 cXueKe.setCellValue(extraMap.get("XueKe"));
