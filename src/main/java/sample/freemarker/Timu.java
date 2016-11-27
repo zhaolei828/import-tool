@@ -5,6 +5,7 @@ package sample.freemarker;
  * @create 2016-08-20 17:31
  */
 public class Timu {
+    private String tihao;
     private String tigan;
     private String xuanxiang;
     private String daan;
@@ -14,6 +15,14 @@ public class Timu {
     private String[] zsd4_Arr;
     private String nljg;
     private String pingjia;
+
+    public String getTihao() {
+        return tihao;
+    }
+
+    public void setTihao(String tihao) {
+        this.tihao = tihao;
+    }
 
     public String getTigan() {
         return tigan;

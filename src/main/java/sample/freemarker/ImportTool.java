@@ -65,15 +65,16 @@ public class ImportTool {
                 //题干
                 if (isTiGan(element)){
                     tigan = element.text();
-                    //2.题干前面的题号是否可以带着 by 苏 《关于软件的几点改进意见.docx》
-//                    try {
-//                        tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
-//                    }catch (Exception e) {
-//                        if (tigan.length() > 15) {
-//                            tigan = tigan.substring(0,10);
-//                        }
-//                        throw new ReadDataException("500","GetTiGanException","读取题干异常：请检查题干格式。：["+tigan+"]");
-//                    }
+                    try {
+                        String tihao = getTihao(element);
+                        timu.setTihao(tihao);
+                        tigan = tigan.split("\\d+(\\.|．)")[1]+"\n";
+                    }catch (Exception e) {
+                        if (tigan.length() > 15) {
+                            tigan = tigan.substring(0,10);
+                        }
+                        throw new ReadDataException("500","GetTiGanException","读取题干异常：请检查题干格式。：["+tigan+"]");
+                    }
                     appenTiGanFlag = true;
                     continue;
                 }
@@ -393,6 +394,24 @@ public class ImportTool {
         return isBiaoQian(element,regEx) && preElementText.length()==0;
     }
 
+    public static String getTihao(Element element){
+        String tihaoText="";
+        String tihao="";
+        String regEx="^\\d+(\\.|．)";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(element.text());
+        while (m.find()){
+            tihaoText = m.group();
+        }
+
+        Pattern p2 = Pattern.compile("\\d+");
+        Matcher m2 = p2.matcher(tihaoText);
+        while (m2.find()){
+            tihao = m2.group();
+        }
+        return tihao;
+    }
+
     public static boolean isXiaoTi(Element element){
         String regEx="^((（|\\()\\d+(）|\\))|(①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮|⑯|⑰|⑱|⑲|⑳)).+";
         return isBiaoQian(element,regEx);
@@ -474,8 +493,11 @@ public class ImportTool {
         return isBiaoQian(element,regEx);
     }
     public static boolean isZsd(Element element){
-        String regEx="(〖|【)?\\s*(考点|三级知识点)(〗|】)?.+";
-        return isBiaoQian(element,regEx);
+        String regEx="(〖|【)?\\s*考点(〗|】)?.+";
+        String regEx2="^(〖|【)?三级知识点(〗|】)?.+";
+        boolean b1 = isBiaoQian(element,regEx);
+        boolean b2 = isBiaoQian(element,regEx2);
+        return b1 || b2;
     }
 
     public static boolean isZsd4(Element element){
@@ -571,7 +593,7 @@ public class ImportTool {
         style.setFont(font);
 
 
-        String[] head = new String[]{"编号*","学科*","省份","城市","年份","题型*","错误率","题干","备选答案",
+        String[] head = new String[]{"编号*","学科*","省份","城市","年份","题型*","错误率","题号","题干","备选答案",
                 "正确答案","解析"	,"试题评价","典型题","能力结构","来源","是否有视频","视频文件","视频质量","视频类型"
                 ,"第三级知识点1","第三级知识点2","第三级知识点3","第三级知识点4","第三级知识点5"
                 ,"第四级知识点1","第四级知识点2","第四级知识点3","第四级知识点4","第四级知识点5"};
@@ -585,23 +607,19 @@ public class ImportTool {
 
         tgNow = "";
         for(int rownum = 1; rownum <= list.size(); rownum++) {
-            //题号
-            String tiHao = "";
-            if(rownum < 10){
-                tiHao = "0" + rownum;
-            }else {
-                tiHao = rownum + "";
-            }
-
             Row r = s.createRow(rownum);
             Timu timu = list.get(rownum-1);
             tgNow = timu.getTigan();
             if(tgNow.length()>40){
                 tgNow = tgNow.substring(0,30)+"……";
             }
+            String tihao = timu.getTihao();
+            if (null != tihao && tihao.length()==1){
+                tihao = "0"+tihao;
+            }
             if (null != extraMap) {
                 Cell cBianHao = r.createCell(headList.indexOf("编号*"));
-                cBianHao.setCellValue(extraMap.get("BianHao") + tiHao);
+                cBianHao.setCellValue(extraMap.get("BianHao") + tihao);
 
                 Cell cXueKe = r.createCell(headList.indexOf("学科*"));
                 cXueKe.setCellValue(extraMap.get("XueKe"));
@@ -616,11 +634,18 @@ public class ImportTool {
                 cNianFen.setCellValue(extraMap.get("NianFen"));
             }
 
+            Cell cTiHao = r.createCell(headList.indexOf("题号"));
+            cTiHao.setCellValue(tihao);
+
             Cell cTiGan = r.createCell(headList.indexOf("题干"));
             cTiGan.setCellValue(timu.getTigan());
 
             Cell cXuanXiang = r.createCell(headList.indexOf("备选答案"));
-            cXuanXiang.setCellValue(timu.getXuanxiang());
+            if (timu.getTixing().equals("单选题") && timu.getXuanxiang().equals("")){
+                cXuanXiang.setCellValue("A::\nB::\nC::\nD::\n");
+            }else {
+                cXuanXiang.setCellValue(timu.getXuanxiang());
+            }
 
             Cell cDaAn = r.createCell(headList.indexOf("正确答案"));
             cDaAn.setCellValue(timu.getDaan());
