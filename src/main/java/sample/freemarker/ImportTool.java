@@ -38,6 +38,15 @@ public class ImportTool {
                 element.html(element.html().replaceAll("&nbsp;"," "));
                 pElementList.add(element);
             }
+            if(element.tag().getName().equals("div")){
+                Elements divChildren = element.children();
+                for (Element divChildElement:divChildren) {
+                    if(divChildElement.tag().getName().equals("p")){
+                        divChildElement.html(divChildElement.html().replaceAll("&nbsp;"," "));
+                        pElementList.add(divChildElement);
+                    }
+                }
+            }
         }
 
         List<List<Element>> reList = regroup(pElementList);
