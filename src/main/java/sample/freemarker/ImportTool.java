@@ -650,7 +650,7 @@ public class ImportTool {
             cTiGan.setCellValue(timu.getTigan());
 
             Cell cXuanXiang = r.createCell(headList.indexOf("备选答案"));
-            if (timu.getTixing().equals("单选题") && timu.getXuanxiang().equals("")){
+            if (null != timu.getTixing() && timu.getTixing().equals("单选题") && timu.getXuanxiang().equals("")){
                 cXuanXiang.setCellValue("A::\nB::\nC::\nD::\n");
             }else {
                 cXuanXiang.setCellValue(timu.getXuanxiang());
