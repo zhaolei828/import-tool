@@ -2,6 +2,8 @@ package sample.freemarker;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
@@ -26,7 +28,6 @@ import java.util.regex.Pattern;
  * Time: 下午1:58
  */
 public class ImportTool {
-
     public static void improtExcel(String docPath,String htmlPath,String excelPath) throws Exception{
         File htmlFile = new File(htmlPath);
         Document doc = Jsoup.parse(htmlFile, "UTF-8");
@@ -342,18 +343,20 @@ public class ImportTool {
     static File findAnsFile(String docPath){
         File docFile = new File(docPath);
         String docFileName = docFile.getName();
-        String docName = docFileName.split("试题")[0];
-        File parentDirFile = docFile.getParentFile();
-        if (parentDirFile.isDirectory()){
-            File[] sonFiles = parentDirFile.listFiles();
-            for (File sonFile:sonFiles) {
-                String sonFileName = sonFile.getName();
-                String sonName = sonFileName.substring(0,sonFileName.lastIndexOf("."));
-                String regex = "(.*)"+docName+"(.*)答案(.*)";
-                Pattern p = Pattern.compile(regex);
-                Matcher m = p.matcher(sonName);
-                if(m.find()){
-                  return sonFile;
+        if (docFileName.contains("试题")){
+            String docName = docFileName.split("试题")[0];
+            File parentDirFile = docFile.getParentFile();
+            if (parentDirFile.isDirectory()){
+                File[] sonFiles = parentDirFile.listFiles();
+                for (File sonFile:sonFiles) {
+                    String sonFileName = sonFile.getName();
+                    String sonName = sonFileName.substring(0,sonFileName.lastIndexOf("."));
+                    String regex = "(.*)"+docName+"(.*)答案(.*)";
+                    Pattern p = Pattern.compile(regex);
+                    Matcher m = p.matcher(sonName);
+                    if(m.find()){
+                        return sonFile;
+                    }
                 }
             }
         }
