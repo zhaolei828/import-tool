@@ -593,7 +593,7 @@ public class ImportTool {
         style.setFont(font);
 
 
-        String[] head = new String[]{"编号*","学科*","省份","城市","年份","题型*","错误率","题号","题干","备选答案",
+        String[] head = new String[]{"题目类型*","编号*","学科*","省份","城市","年份","题型*","错误率","题号","题干","备选答案",
                 "正确答案","解析"	,"试题评价","典型题","能力结构","来源","是否有视频","视频文件","视频质量","视频类型"
                 ,"第三级知识点1","第三级知识点2","第三级知识点3","第三级知识点4","第三级知识点5"
                 ,"第四级知识点1","第四级知识点2","第四级知识点3","第四级知识点4","第四级知识点5"};
@@ -618,6 +618,9 @@ public class ImportTool {
                 tihao = "0"+tihao;
             }
             if (null != extraMap) {
+                Cell cTmlx = r.createCell(headList.indexOf("题目类型*"));
+                cTmlx.setCellValue("普通");
+
                 Cell cBianHao = r.createCell(headList.indexOf("编号*"));
                 cBianHao.setCellValue(extraMap.get("BianHao") + tihao);
 
