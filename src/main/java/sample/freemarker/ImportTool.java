@@ -38,6 +38,15 @@ public class ImportTool {
                 element.html(element.html().replaceAll("&nbsp;"," "));
                 pElementList.add(element);
             }
+            if(element.tag().getName().equals("div")){
+                Elements divChildren = element.children();
+                for (Element divChildElement:divChildren) {
+                    if(divChildElement.tag().getName().equals("p")){
+                        divChildElement.html(divChildElement.html().replaceAll("&nbsp;"," "));
+                        pElementList.add(divChildElement);
+                    }
+                }
+            }
         }
 
         List<List<Element>> reList = regroup(pElementList);
@@ -644,7 +653,7 @@ public class ImportTool {
             cTiGan.setCellValue(timu.getTigan());
 
             Cell cXuanXiang = r.createCell(headList.indexOf("备选答案"));
-            if (timu.getTixing().equals("单选题") && timu.getXuanxiang().equals("")){
+            if (null != timu.getTixing() && timu.getTixing().equals("单选题") && timu.getXuanxiang().equals("")){
                 cXuanXiang.setCellValue("A::\nB::\nC::\nD::\n");
             }else {
                 cXuanXiang.setCellValue(timu.getXuanxiang());
